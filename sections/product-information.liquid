@@ -1,8 +1,28 @@
 
+{% comment %}
+  Bonus task — Product JSON-LD.
 
-<script type="application/ld+json">
-  {{ closest.product | structured_data }}
-</script>
+  Horizon already ships `{{ closest.product | structured_data }}` and it
+  works fine for the basics. I swapped it out for my own snippet below
+  because the brief calls out LLM and search discoverability as something
+  Huda is actively exploring — felt like the right place to actually show
+  the schema work instead of leaning on a one-line filter.
+
+  My version goes a bit further than the filter: one Offer per variant
+  rather than just the cheapest, the full image gallery instead of one
+  image, brand as an object, per-variant SKU/GTIN when set, and a separate
+  BreadcrumbList block on top so crawlers and LLMs get navigation context.
+
+  Keeping the original line commented out (not deleted) so it's obvious
+  this was a deliberate swap rather than an oversight. Can't ship both at
+  once though — Google flags duplicate Product entities on the same page.
+
+  Original line, for reference:
+  <script type="application/ld+json">
+    {{ closest.product | structured_data }}
+  </script>
+{% endcomment %}
+{% render 'huda-product-jsonld', product: closest.product %}
 
 {% capture media_gallery %}
   {%- content_for 'block',

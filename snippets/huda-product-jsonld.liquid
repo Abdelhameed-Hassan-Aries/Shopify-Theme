@@ -1,0 +1,117 @@
+{% doc %}
+  Bonus task — hand-rolled Product JSON-LD.
+
+  Goes beyond what Shopify's `structured_data` filter emits out of the box:
+  - One Offer per variant, with availability per variant, instead of a single
+    cheapest-price offer.
+  - Full image gallery instead of a single image.
+  - Brand as a Brand object, plus per-variant SKU and GTIN (from variant
+    barcodes) when they're set in admin.
+  - A separate BreadcrumbList block (Home → collection → product) for
+    navigation context — useful for LLM/GEO ingestion as well as search.
+
+  This snippet replaces the theme's `structured_data` filter call, so the page
+  only ever emits one Product entity. See sections/product-information.liquid.
+
+  @param {object} product - the product to describe
+{% enddoc %}
+
+{%- if product != blank and product.title != blank -%}
+  {%- liquid
+    assign shop_url = shop.url
+    assign product_url = shop_url | append: product.url
+    assign currency = cart.currency.iso_code | default: shop.currency
+    assign description = product.description | strip_html | strip_newlines | strip
+    assign first_collection = product.collections.first
+    assign primary_variant = product.selected_or_first_available_variant
+  -%}
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": {{ product.title | json }},
+  "url": {{ product_url | json }}
+  {%- if description != blank -%},
+  "description": {{ description | json }}
+  {%- endif -%}
+  {%- if product.images.size > 0 -%},
+  "image": [
+    {%- for image in product.images -%}
+      {{ image | image_url: width: 1500 | prepend: 'https:' | json }}{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ]
+  {%- endif -%}
+  {%- if product.vendor != blank -%},
+  "brand": {
+    "@type": "Brand",
+    "name": {{ product.vendor | json }}
+  }
+  {%- endif -%}
+  {%- if product.type != blank -%},
+  "category": {{ product.type | json }}
+  {%- endif -%}
+  {%- if primary_variant.sku != blank -%},
+  "sku": {{ primary_variant.sku | json }}
+  {%- endif -%}
+  {%- if primary_variant.barcode != blank -%},
+  "gtin": {{ primary_variant.barcode | json }}
+  {%- endif -%},
+  "offers": [
+    {%- for variant in product.variants -%}
+      {
+        "@type": "Offer",
+        "url": {{ shop_url | append: variant.url | json }},
+        "price": "{{ variant.price | divided_by: 100.0 }}",
+        "priceCurrency": {{ currency | json }},
+        "availability": {% if variant.available %}"https://schema.org/InStock"{% else %}"https://schema.org/OutOfStock"{% endif %},
+        "itemCondition": "https://schema.org/NewCondition"
+        {%- if variant.sku != blank -%},
+        "sku": {{ variant.sku | json }}
+        {%- endif -%}
+        {%- if variant.barcode != blank -%},
+        "gtin": {{ variant.barcode | json }}
+        {%- endif -%}
+        {%- if variant.title != blank and variant.title != 'Default Title' -%},
+        "name": {{ variant.title | json }}
+        {%- endif -%}
+      }{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ]
+}
+  </script>
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": {{ shop_url | json }}
+    }
+    {%- if first_collection != blank -%},
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": {{ first_collection.title | json }},
+      "item": {{ shop_url | append: first_collection.url | json }}
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": {{ product.title | json }}
+    }
+    {%- else -%},
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": {{ product.title | json }}
+    }
+    {%- endif -%}
+  ]
+}
+  </script>
+{%- endif -%}

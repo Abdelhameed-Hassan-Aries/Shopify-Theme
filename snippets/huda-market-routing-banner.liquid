@@ -1,0 +1,76 @@
+{% doc %}
+  Task 01 — market routing banner.
+
+  Pulls the regional store list from the huda_regional_store metaobject and
+  the current storefront's region from the huda_assessment.current_region
+  shop metafield. Everything else (matching, dismiss, geo lookup) happens
+  in huda-market-routing-banner.js.
+{% enddoc %}
+
+{%- liquid
+  assign current_region = shop.metafields.huda_assessment.current_region.value
+  assign regional_stores = metaobjects.huda_regional_store.values
+-%}
+
+{%- if settings.huda_market_routing_enabled and current_region != blank and regional_stores != blank -%}
+  {% comment %} CSS/JS for this snippet live in layout/theme.liquid <head>. {% endcomment %}
+  <huda-market-routing-banner
+    class="huda-market-routing-banner"
+    role="region"
+    aria-label="Regional store notice"
+    hidden
+  >
+    <div class="huda-market-routing-banner__inner">
+      <p
+        class="huda-market-routing-banner__message"
+        data-huda-market-message
+      ></p>
+
+      <a
+        class="huda-market-routing-banner__cta"
+        data-huda-market-link
+        hidden
+      ></a>
+
+      <button
+        type="button"
+        class="huda-market-routing-banner__dismiss"
+        data-huda-market-dismiss
+        aria-label="Close regional store notice"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
+    <script
+      type="application/json"
+      data-huda-market-config
+    >
+      {
+        "currentRegionCode": {{ current_region.region_code.value | upcase | json }},
+        "geoEndpoint": "https://ipapi.co/json/",
+        "regions": [
+          {%- for region in regional_stores -%}
+            {
+              "regionCode": {{ region.region_code.value | upcase | json }},
+              "regionName": {{ region.region_name.value | json }},
+              "countryCodes": [
+                {%- for country_code in region.country_codes.value -%}
+                  {{ country_code | upcase | json }}{% unless forloop.last %},{% endunless %}
+                {%- endfor -%}
+              ],
+              "storeUrl": {{ region.store_url.value | json }},
+              "ctaLabel": {{ region.cta_label.value | json }},
+              "bannerMessage": {{ region.banner_message.value | json }}
+            }{% unless forloop.last %},{% endunless %}
+          {%- endfor -%}
+        ]
+      }
+    </script>
+  </huda-market-routing-banner>
+
+  {% comment %} Load immediately after the banner markup so query/cached IP matches render before the rest of the page finishes parsing. {% endcomment %}
+  {% # theme-check-disable ParserBlockingScript %}
+  <script src="{{ 'huda-market-routing-banner.js' | asset_url }}"></script>
+  {% # theme-check-enable ParserBlockingScript %}
+{%- endif -%}

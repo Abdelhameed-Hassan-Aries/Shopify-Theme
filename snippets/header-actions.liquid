@@ -217,6 +217,9 @@
                 </button>
               </div>
 
+              {% comment %} Cart rewards (Task 02). Sits right under the drawer header so it's the first thing the shopper sees when the drawer opens. {% endcomment %}
+              {% render 'huda-cart-rewards' %}
+
               <scroll-hint
                 class="cart-drawer__content"
                 aria-label="{{ 'accessibility.cart' | t }}"
@@ -354,7 +357,7 @@
     background-color: var(--color-background);
 
     @media screen and (min-width: 750px) {
-      width: var(--sidebar-width);
+      width: min(36rem, 95vw);
       max-width: 95vw;
     }
   }

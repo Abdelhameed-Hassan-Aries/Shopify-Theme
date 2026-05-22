@@ -32,6 +32,16 @@
     {%- render 'theme-styles-variables' -%}
     {%- render 'color-schemes' -%}
 
+    {% comment %} Loading assets here because the cart rewards snippet is rendered in a few cart slots and I didn't want the same <link>/<script> tags showing up two or three times. {% endcomment %}
+    {%- if settings.huda_market_routing_enabled and shop.metafields.huda_assessment.current_region.value != blank and metaobjects.huda_regional_store.values != blank -%}
+      <link rel="preconnect" href="https://ipapi.co">
+      <link rel="stylesheet" href="{{ 'huda-market-routing-banner.css' | asset_url }}">
+    {%- endif -%}
+    {%- if settings.huda_cart_rewards_enabled and metaobjects.huda_cart_reward_milestone.values != blank -%}
+      <link rel="stylesheet" href="{{ 'huda-cart-rewards.css' | asset_url }}">
+      <script src="{{ 'huda-cart-rewards.js' | asset_url }}" type="module" fetchpriority="low"></script>
+    {%- endif -%}
+
     {% if request.design_mode %}
       {%- render 'theme-editor' -%}
     {% endif %}
@@ -42,6 +52,9 @@
 
   <body class="page-width-{{ settings.page_width }} card-hover-effect-{{ settings.card_hover_effect }}">
     {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
+    {% comment %} Market routing banner (Task 01). Sits above the header so it shows on every page. {% endcomment %}
+    {% render 'huda-market-routing-banner' %}
+
     <div id="header-group">
       {% sections 'header-group' %}
     </div>

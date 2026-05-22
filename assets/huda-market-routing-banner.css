@@ -1,0 +1,95 @@
+.huda-market-routing-banner {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: calc(var(--layer-sticky) + 1);
+  background: rgb(var(--color-foreground-rgb) / 0.85);
+  color: var(--color-background);
+}
+
+.huda-market-routing-banner[hidden] {
+  display: none;
+}
+
+.huda-market-routing-banner__inner {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--gap-xs);
+  width: min(100%, var(--page-width));
+  margin-inline: auto;
+  padding: 0.45rem var(--page-margin);
+}
+
+.huda-market-routing-banner__message {
+  margin: 0;
+  font-size: var(--font-size--xs);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.huda-market-routing-banner__cta {
+  color: inherit;
+  font-size: var(--font-size--xs);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  white-space: nowrap;
+}
+
+.huda-market-routing-banner__dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--style-border-radius-buttons-secondary);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.huda-market-routing-banner__cta:focus-visible,
+.huda-market-routing-banner__dismiss:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.huda-market-routing-banner__dismiss:hover {
+  background: rgb(255 255 255 / 0.1);
+}
+
+body:has(> .huda-market-routing-banner:not([hidden]))
+  .header-section:has(> #header-component[sticky='always']),
+body:has(> .huda-market-routing-banner:not([hidden]))
+  .header-section:has(> #header-component[sticky='scroll-up'][data-sticky-state='active']) {
+  top: calc(var(--huda-market-routing-banner-height, 0px) - 1px);
+}
+
+@media screen and (max-width: 749px) {
+  .huda-market-routing-banner__inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.2rem var(--gap-xs);
+    padding: 0.55rem var(--page-margin);
+  }
+
+  .huda-market-routing-banner__message {
+    font-size: 0.75rem;
+  }
+
+  .huda-market-routing-banner__cta {
+    grid-column: 1;
+    width: fit-content;
+    font-size: 0.75rem;
+  }
+
+  .huda-market-routing-banner__dismiss {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}

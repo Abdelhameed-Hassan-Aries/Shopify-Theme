@@ -1,7 +1,6 @@
 # Huda Beauty Frontend Assessment
 
-Take-home for the Frontend Engineer role. Built on the Horizon theme and scoped to the four regional storefronts in the brief: US, UK, EU, and UAE, plus the optional structured-data bonus.
-
+Take-home for the Frontend Engineer role. Built on the Horizon theme and scoped to a configurable multi-region storefront setup, plus the optional structured-data bonus.
 The goal across all three pieces is the same: keep behaviour in code, keep content in admin. A merchandiser can rename a region, retune a reward tier, or swap a free gift without touching Liquid or JS.
 
 ---
@@ -59,13 +58,18 @@ Lives in [`snippets/huda-product-jsonld.liquid`](snippets/huda-product-jsonld.li
 
 Horizon ships with `{{ closest.product | structured_data }}` and it works fine for the basics, but it emits a single `Offer` with the cheapest variant's price, a single image, and no breadcrumb. That is the baseline, not the GEO-friendly version.
 
-For an assessment specifically calling out LLM discoverability, the hand-rolled block:
+For this assessment, the brief specifically mentions LLM discoverability, so the schema work is more intentional than just leaving the default filter in place.
 
-- shows schema.org knowledge (`Product`, `Offer`, `Brand`, `BreadcrumbList`), not just awareness of the filter,
-- gives LLMs and search engines a richer signal per page: multi-variant offers, navigation context, and full gallery,
-- works on **any** theme. The filter is modern-Liquid only, and `closest.product` is Horizon-specific. Older themes like Brooklyn, Debut, or custom builds would not have either and would need this exact approach.
+The hand-rolled block makes the page more useful for search engines and LLMs because it includes:
 
-The original filter call is left commented out in `product-information.liquid` with a note, so a reviewer can see it was considered and intentionally not used. Both blocks live in the same `<script type="application/ld+json">` slot, so the page never emits duplicate Product entities. Google would reject one of them.
+- proper schema.org structure: `Product`, `Offer`, `Brand`, and `BreadcrumbList`,
+- one offer per variant instead of only the cheapest variant,
+- the full product gallery instead of a single image,
+- breadcrumb context, so the page structure is clearer.
+
+It also makes the approach more portable. Horizon’s `structured_data` filter is useful, but it depends on modern Liquid and `closest.product`, which is Horizon-specific. Older themes like Brooklyn, Debut, or custom builds would not have that same setup, so this manual approach is closer to what would be needed there.
+
+The original filter call is left commented out in `product-information.liquid` with a note, so it is clear that it was considered and intentionally not used here. The page still only outputs one `Product` schema, so there are no duplicate Product entities for Google to reject.
 
 #### Production-mindset trade-off
 
@@ -175,7 +179,5 @@ Everything a non-technical merchandiser needs to edit is in admin:
 - **Cart-side gift insertion, not server-enforced.** Gifts go in via `/cart/add.js` from the storefront and are tagged with a `_huda_cart_reward_gift` line property. It keeps the feature reactive and code-only, but a determined shopper could keep the gift in their cart after going below the threshold by intercepting requests.
 
   For a real rollout, this should be backed by a Shopify Function or cart transform so the server is the final authority. Real discounts, including codes and automatic discounts, are still out of scope and would live in Shopify Discounts.
-
-```
 
 ```

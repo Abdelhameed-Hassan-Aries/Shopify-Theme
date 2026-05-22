@@ -39,6 +39,27 @@ declare global {
     Shopify: Shopify;
   }
 
+  // Manual View Transition types — Horizon uses these but lib.dom hasn't shipped them everywhere yet.
+  interface ViewTransition {
+    readonly types: ViewTransitionTypeSet;
+  }
+
+  interface ViewTransitionTypeSet {
+    add(type: string): void;
+    clear(): void;
+    delete(type: string): boolean;
+    has(type: string): boolean;
+    forEach(callback: (type: string) => void): void;
+  }
+
+  interface PageSwapEvent extends Event {
+    readonly viewTransition: ViewTransition | null;
+  }
+
+  interface PageRevealEvent extends Event {
+    readonly viewTransition: ViewTransition | null;
+  }
+
   declare const Shopify: Shopify;
   declare const Theme: Theme;
 

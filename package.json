@@ -1,0 +1,17 @@
+{
+  "name": "huda-beauty-frontend-assessment",
+  "version": "1.0.0",
+  "description": "Horizon-based Shopify theme",
+  "private": true,
+  "scripts": {
+    "dev": "shopify theme dev --store abdelhameed-store.myshopify.com"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git"
+  },
+  "author": "Abdelhameed Hassan",
+  "license": "UNLICENSED"
+}

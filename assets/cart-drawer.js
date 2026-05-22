@@ -67,10 +67,10 @@ class CartDrawerComponent extends DialogComponent {
 
   /**
    * Handles cart add events - opens drawer if auto-open and announces count when open.
-   * @param {CustomEvent<{ resource?: { item_count?: number } }>} event
+   * @param {CustomEvent<{ resource?: { item_count?: number }, data?: { source?: string } }>} event
    */
   #handleCartAdd = (event) => {
-    if (this.hasAttribute('auto-open')) {
+    if (this.hasAttribute('auto-open') && event.detail.data?.source !== 'huda-cart-rewards') {
       this.showDialog();
     }
 

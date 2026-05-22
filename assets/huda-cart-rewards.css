@@ -1,0 +1,129 @@
+huda-cart-rewards {
+  display: grid;
+  gap: var(--gap-sm);
+  width: 100%;
+  margin-block-end: 25px;
+  padding: var(--padding-md);
+  border: var(--style-border-width) solid var(--color-border);
+  border-radius: 8px;
+  background: rgb(var(--color-foreground-rgb) / 0.03);
+}
+
+.huda-cart-rewards__header {
+  display: grid;
+  gap: var(--gap-3xs);
+}
+
+.huda-cart-rewards__eyebrow {
+  font-size: var(--font-size--2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.huda-cart-rewards__status {
+  color: rgb(var(--color-foreground-rgb) / var(--opacity-70));
+  font-size: var(--font-size--sm);
+  line-height: 1.4;
+}
+
+.huda-cart-rewards__progress {
+  width: 100%;
+  height: 0.5rem;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--color-foreground-rgb) / 0.12);
+}
+
+.huda-cart-rewards__progress::-webkit-progress-bar {
+  border-radius: inherit;
+  background: rgb(var(--color-foreground-rgb) / 0.12);
+}
+
+.huda-cart-rewards__progress::-webkit-progress-value {
+  border-radius: inherit;
+  background: var(--color-foreground);
+}
+
+.huda-cart-rewards__progress::-moz-progress-bar {
+  border-radius: inherit;
+  background: var(--color-foreground);
+}
+
+.huda-cart-rewards__milestones {
+  position: relative;
+  min-height: 3.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.huda-cart-rewards__milestone {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: var(--huda-cart-rewards-milestone-position, 0%);
+  display: grid;
+  gap: var(--gap-3xs);
+  width: max-content;
+  max-width: min(7rem, 36%);
+  color: rgb(var(--color-foreground-rgb) / var(--opacity-70));
+  font-size: var(--font-size--2xs);
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.huda-cart-rewards__milestone::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+  justify-self: center;
+}
+
+.huda-cart-rewards__milestone:last-child {
+  text-align: end;
+  transform: translateX(-100%);
+}
+
+.huda-cart-rewards__milestone:last-child::before {
+  justify-self: end;
+}
+
+.huda-cart-rewards__milestone--unlocked {
+  color: var(--color-foreground);
+}
+
+.huda-cart-rewards__milestone--unlocked::before {
+  background: currentColor;
+}
+
+.huda-cart-rewards__milestone-title,
+.huda-cart-rewards__milestone-threshold {
+  overflow-wrap: anywhere;
+}
+
+.huda-cart-rewards__milestone-title {
+  font-weight: 700;
+}
+
+cart-items-component > huda-cart-rewards {
+  width: auto;
+  margin: var(--margin-sm) var(--cart-drawer-padding) 25px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+@media screen and (min-width: 750px) {
+  cart-items-component > huda-cart-rewards {
+    margin-inline: var(--cart-drawer-padding-desktop);
+  }
+}
+
+.huda-cart-rewards-wrapper {
+  width: min(100%, var(--sidebar-width));
+  margin-block-start: var(--margin-lg);
+}

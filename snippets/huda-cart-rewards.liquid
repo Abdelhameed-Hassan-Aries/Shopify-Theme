@@ -1,0 +1,141 @@
+{% doc %}
+  Task 02 — cart reward progress.
+
+  Reward tiers come from the huda_cart_reward_milestone metaobject. The
+  current cart total is rendered in minor units (matches what the JS gets
+  from Horizon's cart:update event).
+{% enddoc %}
+
+{%- liquid
+  assign reward_milestones = metaobjects.huda_cart_reward_milestone.values
+-%}
+
+{%- if settings.huda_cart_rewards_enabled and reward_milestones != blank and cart.item_count > 0 -%}
+  {%- liquid
+    assign highest_threshold = 0
+    assign next_threshold = 999999999999
+    assign next_before_message = ''
+    assign unlocked_threshold = 0
+    assign unlocked_message = ''
+
+    for milestone in reward_milestones
+      assign threshold_minor_units = milestone.threshold_amount.value | times: 100 | round
+
+      if threshold_minor_units > highest_threshold
+        assign highest_threshold = threshold_minor_units
+      endif
+
+      if cart.total_price < threshold_minor_units and threshold_minor_units < next_threshold
+        assign next_threshold = threshold_minor_units
+        assign next_before_message = milestone.before_message.value
+      elsif threshold_minor_units >= unlocked_threshold
+        assign unlocked_threshold = threshold_minor_units
+        assign unlocked_message = milestone.unlocked_message.value
+      endif
+    endfor
+
+    assign progress_value = cart.total_price
+    if progress_value > highest_threshold
+      assign progress_value = highest_threshold
+    endif
+
+    assign active_message = unlocked_message
+    if next_threshold < 999999999999
+      assign amount_remaining = next_threshold | minus: cart.total_price
+      assign formatted_amount_remaining = amount_remaining | money
+      assign active_message = next_before_message | replace: '[amount_remaining]', formatted_amount_remaining
+    endif
+  -%}
+
+  {% comment %} CSS/JS for this snippet live in layout/theme.liquid <head>. {% endcomment %}
+  <huda-cart-rewards>
+    <script
+      type="application/json"
+      data-huda-cart-rewards-config
+    >
+      {
+        "cartTotal": {{ cart.total_price | json }},
+        "itemCount": {{ cart.item_count | json }},
+        "currency": {{ cart.currency.iso_code | json }},
+        "moneyFormat": {{ shop.money_format | json }},
+        "milestones": [
+          {%- for milestone in reward_milestones -%}
+            {%- liquid
+              assign threshold_minor_units = milestone.threshold_amount.value | times: 100 | round
+              assign gift_product = milestone.gift_product.value
+              assign gift_variant_id = nil
+              if gift_product != blank and gift_product.selected_or_first_available_variant != blank
+                assign gift_variant_id = gift_product.selected_or_first_available_variant.id
+              endif
+            -%}
+            {
+              "title": {{ milestone.title.value | json }},
+              "threshold": {{ threshold_minor_units | json }},
+              "beforeMessage": {{ milestone.before_message.value | json }},
+              "unlockedMessage": {{ milestone.unlocked_message.value | json }},
+              "giftVariantId": {{ gift_variant_id | json }}
+            }{% unless forloop.last %},{% endunless %}
+          {%- endfor -%}
+        ]
+      }
+    </script>
+
+    <div class="huda-cart-rewards__header">
+      <span class="huda-cart-rewards__eyebrow">
+        {{- settings.huda_cart_rewards_heading | escape -}}
+      </span>
+      <span
+        class="huda-cart-rewards__status"
+        data-huda-cart-rewards-status
+        aria-live="polite"
+      >
+        {{- active_message | escape -}}
+      </span>
+    </div>
+
+    <progress
+      class="huda-cart-rewards__progress"
+      data-huda-cart-rewards-progress
+      value="{{ progress_value }}"
+      max="{{ highest_threshold }}"
+      aria-label="Cart reward progress"
+      aria-valuemin="0"
+      aria-valuemax="{{ highest_threshold }}"
+      aria-valuenow="{{ progress_value }}"
+      aria-valuetext="{{ active_message | escape }}"
+    ></progress>
+
+    <ol
+      class="huda-cart-rewards__milestones"
+      data-huda-cart-rewards-milestones
+    >
+      {%- for milestone in reward_milestones -%}
+        {%- liquid
+          assign threshold_minor_units = milestone.threshold_amount.value | times: 100 | round
+          assign milestone_position = 0
+          if highest_threshold > 0
+            assign milestone_position = threshold_minor_units | times: 100.0 | divided_by: highest_threshold
+          endif
+          if milestone_position > 100
+            assign milestone_position = 100
+          endif
+          assign milestone_unlocked = false
+          if cart.total_price >= threshold_minor_units
+            assign milestone_unlocked = true
+          endif
+        -%}
+        <li
+          class="huda-cart-rewards__milestone{% if milestone_unlocked %} huda-cart-rewards__milestone--unlocked{% endif %}"
+          style="--huda-cart-rewards-milestone-position: {{ milestone_position }}%;"
+        >
+          <span class="huda-cart-rewards__milestone-title">
+            {{- milestone.title.value | escape -}}
+          </span>
+          <span class="huda-cart-rewards__milestone-threshold">
+            {{- threshold_minor_units | money -}}
+          </span>
+        </li>
+      {%- endfor -%}
+    </ol>
+  </huda-cart-rewards>
+{%- endif -%}

@@ -2284,5 +2284,36 @@
         "default": "equal-width-buttons"
       }
     ]
+  },
+  {
+    "name": "Huda assessment",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Market routing"
+      },
+      {
+        "type": "checkbox",
+        "id": "huda_market_routing_enabled",
+        "label": "Enable market routing banner",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Cart rewards"
+      },
+      {
+        "type": "checkbox",
+        "id": "huda_cart_rewards_enabled",
+        "label": "Enable cart reward progress",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "huda_cart_rewards_heading",
+        "label": "Cart reward heading",
+        "default": "Rewards"
+      }
+    ]
   }
 ]

@@ -122,10 +122,19 @@
           </thead>
 
           <tbody role="rowgroup">
+            {%- liquid
+              # Free gifts should always sit at the bottom of the cart, no matter when
+              # they were added. We capture each row into either the regular or gift
+              # bucket inside the loop, then print regular rows first and gifts last.
+              assign regular_rows = ''
+              assign gift_rows = ''
+            -%}
             {% for item in cart.items %}
+              {% assign is_huda_reward_gift = item.properties._huda_cart_reward_gift %}
+              {%- capture row_html -%}
               <tr
                 role="row"
-                class="cart-items__table-row{% if item.parent_relationship.parent != null %} cart-items__nested-line{% endif %}{% unless item.unit_price_measurement %} cart-items__table-row--full-width-variants{% endunless %}"
+                class="cart-items__table-row{% if item.parent_relationship.parent != null %} cart-items__nested-line{% endif %}{% unless item.unit_price_measurement %} cart-items__table-row--full-width-variants{% endunless %}{% if is_huda_reward_gift %} cart-items__table-row--reward-gift{% endif %}"
                 ref="cartItemRows[]"
                 data-parent-key="{{ item.parent_relationship.parent.key }}"
                 data-key="{{ item.key }}"
@@ -150,15 +159,26 @@
                         assign ratio = item.image.aspect_ratio
                       endif
                     %}
-                    <a
-                      href="{{ item.url }}"
-                      class="cart-items__media-container"
-                      style="--ratio:{{ ratio }};"
-                    >
-                      {%- liquid
-                        echo item.image | image_url: width: 250 | image_tag: class: 'cart-items__media-image border-style', style: border_override
-                      -%}
-                    </a>
+                    {%- if is_huda_reward_gift -%}
+                      <span
+                        class="cart-items__media-container"
+                        style="--ratio:{{ ratio }};"
+                      >
+                        {%- liquid
+                          echo item.image | image_url: width: 250 | image_tag: class: 'cart-items__media-image border-style', style: border_override
+                        -%}
+                      </span>
+                    {%- else -%}
+                      <a
+                        href="{{ item.url }}"
+                        class="cart-items__media-container"
+                        style="--ratio:{{ ratio }};"
+                      >
+                        {%- liquid
+                          echo item.image | image_url: width: 250 | image_tag: class: 'cart-items__media-image border-style', style: border_override
+                        -%}
+                      </a>
+                    {%- endif -%}
                   {%- endif %}
                 </td>
                 <td
@@ -168,15 +188,21 @@
                 >
                   <div class="cart-items__product-info">
                     <p>
-                      <a
-                        href="{{ item.url }}"
-                        class="cart-items__title"
-                        {% if item.parent_relationship.parent != null %}
-                          aria-label="{{ 'accessibility.nested_product' | t: product_title: item.product.title, parent_title: item.parent_relationship.parent.title | escape }}"
-                        {% endif %}
-                      >
-                        {{- item.product.title -}}
-                      </a>
+                      {%- if is_huda_reward_gift -%}
+                        <span class="cart-items__title">
+                          {{- item.product.title -}}
+                        </span>
+                      {%- else -%}
+                        <a
+                          href="{{ item.url }}"
+                          class="cart-items__title"
+                          {% if item.parent_relationship.parent != null %}
+                            aria-label="{{ 'accessibility.nested_product' | t: product_title: item.product.title, parent_title: item.parent_relationship.parent.title | escape }}"
+                          {% endif %}
+                        >
+                          {{- item.product.title -}}
+                        </a>
+                      {%- endif -%}
                     </p>
                     {% if item.product.vendor and block_settings.vendor %}
                       <p>
@@ -304,20 +330,26 @@
                     | default: true, allow_false: true
                   %}
                   <div class="cart-items__quantity-controls">
-                    {% render 'volume-pricing-info',
-                      variant: item.variant,
-                      unique_id: item.index,
-                      quantity: item.quantity
-                    %}
+                    {%- if is_huda_reward_gift -%}
+                      <span class="cart-items__reward-gift-badge cart-primary-typography">
+                        {{- 'Free gift' -}}
+                      </span>
+                    {%- else -%}
+                      {% render 'volume-pricing-info',
+                        variant: item.variant,
+                        unique_id: item.index,
+                        quantity: item.quantity
+                      %}
 
-                    {% render 'quantity-selector',
-                      product: item.product,
-                      variant: item.variant,
-                      in_cart_quantity: item.quantity,
-                      line_index: item.index,
-                      class: 'cart-primary-typography',
-                      can_update_quantity: can_update_quantity
-                    %}
+                      {% render 'quantity-selector',
+                        product: item.product,
+                        variant: item.variant,
+                        in_cart_quantity: item.quantity,
+                        line_index: item.index,
+                        class: 'cart-primary-typography',
+                        can_update_quantity: can_update_quantity
+                      %}
+                    {%- endif -%}
 
                     <button
                       class="button cart-items__remove"
@@ -375,7 +407,15 @@
                   {%- endif -%}
                 </td>
               </tr>
+              {%- endcapture -%}
+              {%- if is_huda_reward_gift -%}
+                {%- assign gift_rows = gift_rows | append: row_html -%}
+              {%- else -%}
+                {%- assign regular_rows = regular_rows | append: row_html -%}
+              {%- endif -%}
             {% endfor %}
+            {{ regular_rows }}
+            {{ gift_rows }}
           </tbody>
         </table>
       </div>
@@ -596,6 +636,19 @@
     display: inline-flex;
     font-size: var(--font-size--sm);
     height: auto;
+  }
+
+  .cart-items__reward-gift-badge {
+    display: inline-flex;
+    align-items: center;
+    padding-inline: var(--padding-sm);
+    padding-block: var(--padding-2xs);
+    font-size: var(--font-size--xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid var(--color-border);
+    border-radius: var(--style-border-radius-buttons-primary, 999px);
+    color: var(--color-foreground);
   }
 
   .cart-items__remove {

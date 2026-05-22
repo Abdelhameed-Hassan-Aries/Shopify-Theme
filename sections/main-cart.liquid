@@ -22,6 +22,10 @@
         <div class="cart-page__items">
           {%- content_for 'block', id: 'cart-page-items', type: '_cart-products', force_empty: true %}
         </div>
+        <div class="huda-cart-rewards-wrapper">
+          {% comment %} Empty-cart template — Shopify swaps this in when the cart is cleared, so the rewards stay visible right through the transition. {% endcomment %}
+          {% render 'huda-cart-rewards' %}
+        </div>
         {{ cart_page_more_blocks_content }}
       </div>
     </div>
@@ -40,9 +44,23 @@
         {%- content_for 'block', id: 'cart-page-title', type: '_cart-title' %}
       </div>
 
+      {%- unless cart.empty? -%}
+        <div class="huda-cart-rewards-wrapper">
+          {% comment %} Cart page rewards live outside the cart summary so they never appear above totals. {% endcomment %}
+          {% render 'huda-cart-rewards' %}
+        </div>
+      {%- endunless -%}
+
       <div class="cart-page__items">
         {%- content_for 'block', id: 'cart-page-items', type: '_cart-products' %}
       </div>
+
+      {%- if cart.empty? -%}
+        <div class="huda-cart-rewards-wrapper">
+          {% comment %} Same render for the live empty-cart page so rewards still show before the shopper adds anything. {% endcomment %}
+          {% render 'huda-cart-rewards' %}
+        </div>
+      {%- endif -%}
 
       {%- unless cart.empty? -%}
         <div class="cart-page__summary">
